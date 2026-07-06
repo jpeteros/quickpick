@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1783348039050,
+    "name": "latte",
+    "category": "Drinks",
+    "stock": 5,
+    "price": 97,
+    "minStock": 5
+  },
+  {
+    "id": 1783347596699,
+    "name": "Coke",
+    "category": "Drinks",
+    "stock": 20,
+    "price": 25,
+    "minStock": 5
+  },
+  {
+    "id": 2,
+    "name": "Chips",
+    "category": "Snacks",
+    "stock": 3,
+    "price": 1.2,
+    "minStock": 5
+  },
+  {
+    "id": 3,
+    "name": "Gum",
+    "category": "Candy",
+    "stock": 12,
+    "price": 0.75,
+    "minStock": 6
+  }
+]
