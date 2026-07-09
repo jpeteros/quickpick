@@ -29,10 +29,15 @@ jobs:
         run: npm ci
       - name: Build site
         run: npm run build
+      - name: Prepare Pages site
+        run: |
+          mkdir -p site
+          cp -R dist/. site/
+          cp -R api site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

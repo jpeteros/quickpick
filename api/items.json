@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Cola",
+    "category": "Drinks",
+    "stock": 8,
+    "price": 1.5,
+    "minStock": 5
+  },
+  {
+    "id": 2,
+    "name": "Chips",
+    "category": "Snacks",
+    "stock": 3,
+    "price": 1.2,
+    "minStock": 5
+  },
+  {
+    "id": 3,
+    "name": "Gum",
+    "category": "Candy",
+    "stock": 12,
+    "price": 0.75,
+    "minStock": 6
+  }
+]
