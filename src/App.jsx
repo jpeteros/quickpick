@@ -1,6 +1,75 @@
 import { useEffect, useMemo, useState } from 'react';
 
+const STORAGE_KEY = 'vending-machine-inventory';
+const initialItems = [
+  { id: 1, name: 'Cola', category: 'Drinks', stock: 8, price: 1.5, minStock: 5 },
+  { id: 2, name: 'Chips', category: 'Snacks', stock: 3, price: 1.2, minStock: 5 },
+  { id: 3, name: 'Gum', category: 'Candy', stock: 12, price: 0.75, minStock: 6 },
+];
 const emptyForm = { name: '', category: 'Snacks', stock: 5, price: 1 };
+
+function readStoredItems() {
+  if (typeof window === 'undefined') {
+    return initialItems;
+  }
+
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : initialItems;
+  } catch {
+    return initialItems;
+  }
+}
+
+function writeStoredItems(items) {
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+  return items;
+}
+
+function handleStorageFallback(url, options = {}) {
+  const method = options.method || 'GET';
+  const payload = options.body ? JSON.parse(options.body) : undefined;
+  let items = readStoredItems();
+
+  if (method === 'GET') {
+    return items;
+  }
+
+  if (method === 'POST') {
+    const newItem = {
+      id: Date.now(),
+      name: payload?.name?.trim(),
+      category: payload?.category || 'Snacks',
+      stock: Number(payload?.stock ?? 0),
+      price: Number(payload?.price ?? 0),
+      minStock: Number(payload?.minStock ?? 5),
+    };
+
+    if (!newItem.name) {
+      throw new Error('Name is required');
+    }
+
+    items = [newItem, ...items];
+    return writeStoredItems(items);
+  }
+
+  const idMatch = url.match(/\/api\/items\/(\d+)$/);
+  const itemId = idMatch ? Number(idMatch[1]) : null;
+
+  if (method === 'PATCH' && itemId !== null) {
+    items = items.map((item) => (item.id === itemId ? { ...item, ...payload } : item));
+    return writeStoredItems(items);
+  }
+
+  if (method === 'DELETE' && itemId !== null) {
+    items = items.filter((item) => item.id !== itemId);
+    return writeStoredItems(items);
+  }
+
+  return items;
+}
 
 async function requestJson(url, options = {}) {
   const response = await fetch(url, {
@@ -8,16 +77,20 @@ async function requestJson(url, options = {}) {
     ...options,
   });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error || 'Request failed');
+  if (response.ok) {
+    return response.json();
   }
 
-  return response.json();
+  if (import.meta.env.PROD && response.status === 404) {
+    return handleStorageFallback(url, options);
+  }
+
+  const error = await response.json().catch(() => ({}));
+  throw new Error(error.error || 'Request failed');
 }
 
 function App() {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState(readStoredItems);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
